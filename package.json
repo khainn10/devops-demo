@@ -1,0 +1,11 @@
+{
+  "name": "devops-demo",
+  "version": "1.0.0",
+  "description": "Ung dung mau cho Bai thuc hanh 8 - DevOps",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
