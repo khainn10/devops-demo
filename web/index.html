@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>DevOps Demo</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h1 { color: #1f4e79; }
+    pre { background: #f2f2f2; padding: 16px; border-radius: 6px; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <h1>Giao diện web (dịch vụ web - nginx)</h1>
+  <p>Dữ liệu dưới đây được lấy từ dịch vụ <b>api</b> thông qua đường dẫn <code>/api/info</code>:</p>
+  <pre id="ketqua">Đang tải...</pre>
+  <script>
+    fetch('/api/info')
+      .then(function (r) { return r.json(); })
+      .then(function (d) { document.getElementById('ketqua').textContent = JSON.stringify(d, null, 2); })
+      .catch(function () { document.getElementById('ketqua').textContent = 'Không gọi được dịch vụ api'; });
+  </script>
+</body>
+</html>
