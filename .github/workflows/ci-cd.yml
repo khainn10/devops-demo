@@ -1,0 +1,53 @@
+# .github/workflows/ci-cd.yml
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # ---- Giai đoạn CI: cài đặt và kiểm thử tự động ----
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cài đặt môi trường Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cài đặt thư viện
+        run: npm install
+
+      - name: Chạy kiểm thử tự động
+        run: npm test
+
+  # ---- Giai đoạn đóng gói và phát hành Image lên GitHub Container Registry ----
+  package-and-publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xác định tên Image (bắt buộc chữ thường)
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Build Image
+        run: docker build --build-arg APP_VERSION=${{ github.run_number }} --label org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }} -t $IMAGE:${{ github.sha }} -t $IMAGE:latest .
+
+      - name: Chạy thử Container (smoke test)
+        run: docker run -d --name smoke -p 3000:3000 $IMAGE:${{ github.sha }} && sleep 5 && curl --fail http://localhost:3000/health
+
+      - name: Đăng nhập GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Đẩy Image lên Registry
+        run: docker push $IMAGE:${{ github.sha }} && docker push $IMAGE:latest
