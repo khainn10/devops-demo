@@ -1,1 +1,1 @@
-Xin chao tu nhanh feature
+Xin chao tu pipeline CI/CD
